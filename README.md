@@ -57,7 +57,7 @@ registers are named `bxy_R_E`, with xy the decimal lsb-shift designator in
 register R, known by the name E in the hardware-manual.
 Multi-bit register-constants are similarly defined as `x#_R_E`, where \# is
 a hexadecimal value of register-width divided by 4 nibbles.
-- `R_`, like a "private" variable, example: `SDCMD_'
+- `R_`, like a "private" variable, example: `SDCMD_`
 - `_A`, like a constant "pointer", example: `_IPR[17]`
 - `AI`, like a "constant" value, example: `_IPR[IRQ0]`
 - `bxy_R_E`, example: `b04_DMINT_DTIE`
