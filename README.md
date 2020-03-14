@@ -61,3 +61,33 @@ a hexadecimal value of register-width divided by 4 nibbles.
 - `AI`, like a "constant" value, example: `_IPR[IRQ0]`
 - `bxy_R_E`, example: `b04_DMINT_DTIE`
 - `x#_R_E`, example: `xC000_ICU_IRQFLTC0_FCLKSEL7_PCLKBdiv64`
+
+As a rather complex example if I had to code the IO-ports of an RX65N-ucon
+"bare-metal", it would look something like:
+```.c
+    //named offset-member in anonymous struct (C99):
+#define o_(x,n)	u08 o##n[x];
+    //HW 22. I/O Ports
+#define IO_ (*(struct\
+{	u08 _PDR[32],_PODR[32],_PIDR[32],_PMR[32];\
+	struct {u08 0_,1_;} _ODR[32],_PCR[32],_DSCR[32];};\
+	struct{o_(0x128,0) _DSCR2[32];\ 
+} volatile *const)0x0008C000) 
+```
+The above can be explained by looking into the hardware manual in chapter 22,
+where it would be seen that there is room for 32 8-bit IO-ports, divided into
+several registers per IO-port:
+1. PDR-array, starting at hex-address `0x0008 C000`
+2. PODR-array, starting at hex-address `0x0008 C020`
+3. PIDR-array, starting at hex-address `0x0008 C040`
+4. PMR-array, starting at hex-address `0x0008 C060`
+5. two interleaved arrays, in the manual ODR0 and ODR1 for each port,
+   member bytes addressable as `IO._ODR[portnr]._0` and `IO_._ODR[portnr]._1`
+6. PCR-array, starting at hex-address `0x0008 C0C0`
+7. DSCR-array, starting at hex-address `0x0008 C0E0`
+8. DSCR2-array, starting at an offset of `0x128` at hex-address `0x0008 C128`
+
+So `IO_` would address the (volatile) struct-contents starting at absolute address
+`0x0008 C000`, and selecting for example the output data register of port 5 would
+be done with `IO_._PODR[5]` and address the contents of Byte-address `0x0008 C025`,
+whether it would be a read- or a write action.
