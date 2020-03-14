@@ -81,7 +81,7 @@ As a rather complex example if I had to code the IO-ports of an RX65N-ucon
 ```
 The above can be explained by looking into the hardware manual in chapter 22,
 where it would be seen that there is room for 32 8-bit IO-ports, divided into
-several registers per IO-port:
+several 8-bit registers per IO-port:
 1. PDR-array, starting at hex-address `0x0008 C000`
 2. PODR-array, starting at hex-address `0x0008 C020`
 3. PIDR-array, starting at hex-address `0x0008 C040`
