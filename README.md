@@ -68,15 +68,11 @@ As a rather complex example if I had to code the IO-ports of an RX65N-ucon
     //if you are sure a char is 8-bit wide:
 #define u08 unsigned char
 
-    //"named" offset of size x:
-#define o_(x,n)	u08 o##n[x];
-
     //HW 22. I/O Ports
 #define IO_ (*(struct\
 {	u08 _PDR[32],_PODR[32],_PIDR[32],_PMR[32];\
-	struct {u08 _0_,_1_;} _ODR[32];\
-	u08 _PCR[32],_DSCR[32];\
-	struct{o_(0x28,0) u08 _DSCR2[32];};\
+	struct {u08 _0,_1;} _ODR[32];\
+	u08 _PCR[32],_DSCR[32],_fill[40],_DSCR2[32];\
 } volatile *const)0x0008C000)
 ```
 The above can be explained by looking into the hardware manual in chapter 22, 
@@ -86,13 +82,12 @@ divided into several 8-bit registers per IO-port:
 2. PODR-array, size `0x20`, starting at hex-address `0x0008 C020`
 3. PIDR-array, size `0x20`, starting at hex-address `0x0008 C040`
 4. PMR-array, size `0x20`, starting at hex-address `0x0008 C060`
-5. two interleaved arrays, total size `0x40`, in the manual
-   ODR0 and ODR1 for each port, member bytes addressable as
-   `IO._ODR[portnr]._0_` and `IO_._ODR[portnr]._1_`,
-   starting at hex-address `0x0008 C080`
+5. interleaved arrays ODR0 and ODR1, each sized `0x20`:
+   - ODR0, adressable as `IO_._ODR[portnr]._0`, starting at hex-address `0x0008 C080`
+   - ODR1, adressable as `IO_._ODR[portnr]._1`, starting at hex-address `0x0008 C081`
 6. PCR-array, size `0x20`, starting at hex-address `0x0008 C0C0`
 7. DSCR-array, size `0x20`, starting at hex-address `0x0008 C0E0`
-8. an offset of size `0x28`, starting at hex-address `0x0008 C100`
+8. fill-array of size `0x28`, starting at hex-address `0x0008 C100`
 8. DSCR2-array, size `0x20`, starting at hex-address `0x0008 C128`
 
 So `IO_` would address the (volatile) struct-contents starting at absolute address
