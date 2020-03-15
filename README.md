@@ -13,8 +13,8 @@ the C compiler and C++ compilers will force you produce more bloated source
 code by explicitly doing the typecasts.
 In C I usually stick to unsigned or signed integer types in expressions
 where the sizes differ and only cast the result if needed.
-- _Bool (C99)
-- _Complex (C99)
+- \_Bool (C99)
+- \_Complex (C99)
 - char: minimum size 8 bits, POSIX requires it to be exactly 8 bits
 - double
 - float
@@ -34,7 +34,7 @@ IO-functionality is often decribed as an address being a
 constant pointer to a volatile aggregate type
 containing the IO-registers and void fills for unused addresses.
 Luckily even the old C89 standard has the words `const` and `volatile`:
-- _Atomic (C11)
+- \_Atomic (C11)
 - const (C89)
 - volatile (C89)
 - restrict (C99)
@@ -68,7 +68,7 @@ As a rather complex example if I had to code the IO-ports of an RX65N-ucon
     //if you are sure a char is 8-bit wide:
 #define u08 unsigned char
 
-    //named offset-member in anonymous struct (C99):
+    //"named" offset of size x:
 #define o_(x,n)	u08 o##n[x];
 
     //HW 22. I/O Ports
@@ -76,21 +76,24 @@ As a rather complex example if I had to code the IO-ports of an RX65N-ucon
 {	u08 _PDR[32],_PODR[32],_PIDR[32],_PMR[32];\
 	struct {u08 _0_,_1_;} _ODR[32];\
 	u08 _PCR[32],_DSCR[32];\
-	struct{o_(0x128,0) u08 _DSCR2[32];};\
+	struct{o_(0x28,0) u08 _DSCR2[32];};\
 } volatile *const)0x0008C000)
 ```
-The above can be explained by looking into the hardware manual in chapter 22,
-where it would be seen that there is room for 32 8-bit IO-ports, divided into
-several 8-bit registers per IO-port:
-1. PDR-array, starting at hex-address `0x0008 C000`
-2. PODR-array, starting at hex-address `0x0008 C020`
-3. PIDR-array, starting at hex-address `0x0008 C040`
-4. PMR-array, starting at hex-address `0x0008 C060`
-5. two interleaved arrays, in the manual ODR0 and ODR1 for each port,
-   member bytes addressable as `IO._ODR[portnr]._0_` and `IO_._ODR[portnr]._1_`
-6. PCR-array, starting at hex-address `0x0008 C0C0`
-7. DSCR-array, starting at hex-address `0x0008 C0E0`
-8. DSCR2-array, starting at an offset of `0x128` at hex-address `0x0008 C128`
+The above can be explained by looking into the hardware manual in chapter 22, 
+where it would be seen that there is room for 32 or `0x20` 8-bit IO-ports, 
+divided into several 8-bit registers per IO-port:
+1. PDR-array, size `0x20`, starting at hex-address `0x0008 C000`
+2. PODR-array, size `0x20`, starting at hex-address `0x0008 C020`
+3. PIDR-array, size `0x20`, starting at hex-address `0x0008 C040`
+4. PMR-array, size `0x20`, starting at hex-address `0x0008 C060`
+5. two interleaved arrays, total size `0x40`, in the manual
+   ODR0 and ODR1 for each port, member bytes addressable as
+   `IO._ODR[portnr]._0_` and `IO_._ODR[portnr]._1_`,
+   starting at hex-address `0x0008 C080`
+6. PCR-array, size `0x20`, starting at hex-address `0x0008 C0C0`
+7. DSCR-array, size `0x20`, starting at hex-address `0x0008 C0E0`
+8. an offset of size `0x28`, starting at hex-address `0x0008 C100`
+8. DSCR2-array, size `0x20`, starting at hex-address `0x0008 C128`
 
 So `IO_` would address the (volatile) struct-contents starting at absolute address
 `0x0008 C000`, and selecting for example the output data register of port 5 would
