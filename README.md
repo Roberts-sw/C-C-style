@@ -65,16 +65,13 @@ where \# is a hexadecimal value of register-width divided by 4 nibbles.
 - `x#_R_E`, example: `xC000_ICU_IRQFLTC0_FCLKSEL7_PCLKBdiv64`
 
 As a rather complex example if I had to code the IO-ports of an RX65N-ucon
-"bare-metal", it would look something like:
+"bare-metal", using C99 with exact-width data types, it would look something like:
 ```.c
-    //if you are sure a char is 8-bit wide:
-#define u08 unsigned char
-
     //HW 22. I/O Ports
 #define IO_ (*(struct\
-{	u08 _PDR[32],_PODR[32],_PIDR[32],_PMR[32];\
-	struct {u08 _0,_1;} _ODR[32];\
-	u08 _PCR[32],_DSCR[32],_100[0x28],_DSCR2[32];\
+{	uint8_t _PDR[32],_PODR[32],_PIDR[32],_PMR[32];\
+	struct {uint8_t _0,_1;} _ODR[32];\
+	uint8_t _PCR[32],_DSCR[32],_100[0x28],_DSCR2[32];\
 } volatile *const)0x0008C000)
 ```
 The above can be explained by looking into the hardware manual in chapter 22, 
@@ -90,6 +87,7 @@ divided into several 8-bit registers per IO-port:
 6. PCR-array, size `0x20`, starting at hex-address `0x0008 C0C0`
 7. DSCR-array, size `0x20`, starting at hex-address `0x0008 C0E0`
 8. fill-array of size `0x28`, starting at hex-address `0x0008 C100`
+   - as its name I use the address-offset inside the aggregate type
 9. DSCR2-array, size `0x20`, starting at hex-address `0x0008 C128`
 
 So `IO_` would address the (volatile) struct-contents starting at absolute address
